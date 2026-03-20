@@ -1,0 +1,57 @@
+{
+    "name": "@omss/sdk",
+    "version": "1.0.0",
+    "main": "dist/index.js",
+    "module": "dist/index.mjs",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.mjs",
+            "require": "./dist/index.js"
+        }
+    },
+    "scripts": {
+        "clean": "npx rimraf dist",
+        "build": "npm run clean && tsup src/index.ts --format cjs,esm --dts --out-dir dist"
+    },
+    "peerDependencies": {
+        "react": "^18.0.0"
+    },
+    "devDependencies": {
+        "@types/react": "^18.0.0",
+        "tsup": "^8.5.1",
+        "typescript": "^5.0.0"
+    },
+    "keywords": [
+        "omss",
+        "streaming",
+        "media",
+        "backend",
+        "rest-api",
+        "video",
+        "movies",
+        "tv-shows",
+        "aggregation",
+        "tmdb",
+        "hls",
+        "dash",
+        "provider",
+        "scraper",
+        "framework"
+    ],
+    "author": "OMSS Foundation",
+    "license": "PolyForm Noncommercial License 1.0.0",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/omss-spec/sdk.git"
+    },
+    "bugs": {
+        "url": "https://github.com/omss-spec/sdk/issues"
+    },
+    "homepage": "https://github.com/omss-spec/sdk#readme",
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
+    }
+}
