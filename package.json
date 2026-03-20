@@ -16,7 +16,7 @@
         "build": "npm run clean && tsup src/index.ts --format cjs,esm --dts --out-dir dist"
     },
     "peerDependencies": {
-        "react": "^18.0.0"
+        "react": ">=16.8.0"
     },
     "devDependencies": {
         "@types/react": "^18.0.0",
@@ -41,7 +41,7 @@
         "framework"
     ],
     "author": "OMSS Foundation",
-    "license": "PolyForm Noncommercial License 1.0.0",
+    "license": "MIT",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/omss-spec/sdk.git"

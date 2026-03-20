@@ -13,7 +13,7 @@ export class OmssClient {
 
     constructor(config: OmssClientConfig) {
         this.baseUrl = config.baseUrl.replace(/\/+$/, '')
-        this.fetchFn = config.fetchFn ?? fetch.bind(globalThis);
+        this.fetchFn = config.fetchFn ?? fetch.bind(globalThis)
         this.getDefaultHeaders = config.getDefaultHeaders
     }
 
