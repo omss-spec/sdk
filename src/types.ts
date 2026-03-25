@@ -24,7 +24,6 @@ export interface Provider {
 }
 
 export interface Source {
-    id: string
     url: string
     type: SourceType
     quality: string // e.g. "1080"

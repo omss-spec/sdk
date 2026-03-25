@@ -111,6 +111,21 @@ export class OmssClient {
     refreshSource(responseId: string) {
         return this.requestJson<RefreshResponse>(`/v1/refresh/${encodeURIComponent(responseId)}`)
     }
+
+    /**
+     * Utils Function to set the base URL of the API client after instantiation.
+     * Useful when the base URL is not known at the time of client creation.
+     */
+    setBaseUrl(newBaseUrl: string) {
+        this.baseUrl = newBaseUrl.replace(/\/+$/, '')
+    }
+    
+    /** 
+     * Utils Function to get the current base URL of the API client.
+     */
+    getBaseUrl() {
+        return this.baseUrl
+    }
 }
 
 // Factory
