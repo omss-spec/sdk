@@ -88,8 +88,6 @@ export interface ErrorResponse {
 /**
  * Generic wrapper shape returned by OmssClient methods.
  */
-export interface OmssResult<T> {
-    data: T | null
-    error: ErrorResponse | null
-    status: number
-}
+export type OmssResult<T> =
+    | { data: T; error: null }
+    | { data: null; error: ErrorResponse }

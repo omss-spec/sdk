@@ -41,7 +41,7 @@ export class OmssClient {
                 },
                 traceId: 'network-error',
             }
-            return { data: null, error, status: 0 }
+            return { data: null, error }
         }
 
         const status = res.status
@@ -59,11 +59,11 @@ export class OmssClient {
         }
 
         if (res.ok) {
-            return { data: body as T, error: null, status }
+            return { data: body as T, error: null }
         }
 
         const error = body as ErrorResponse
-        return { data: null, error, status }
+        return { data: null, error }
     }
 
     // ---- OMSS operations ----

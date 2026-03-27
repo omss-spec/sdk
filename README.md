@@ -7,7 +7,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3+-blue.svg)](https://www.typescriptlang.org/)
 [![OMSS Spec](https://img.shields.io/badge/OMSS-v1.0.0-orange.svg)](https://github.com/omss-spec/omss-spec)
 
-A strongly typed TypeScript/React client for backends that implement the **[OMSS (Open Media Streaming Standard)](https://github.com/omss-spec/omss-spec)**. It provides a thin, zero-dependency wrapper around the OMSS REST API so you can fetch streaming sources with a single line:
+A strongly typed TypeScript client for backends that implement the **OMSS (Open Media Streaming Standard)**. It provides a thin, zero-dependency wrapper around the OMSS REST API so you can fetch streaming sources with a single line:
 
 ```ts
 const { data, error } = await omssService.getMovie('155')
@@ -21,129 +21,85 @@ const { data, error } = await omssService.getMovie('155')
 
 OMSS is an open standard for streaming media aggregation. It provides a unified API for fetching movie and TV show streaming sources from multiple providers, with built-in proxy support, subtitle handling, and quality selection.
 
+---
+
 ## 🔍 What is `@omss/sdk`?
 
-The `@omss/sdk` is the official TypeScript client library for consuming any OMSS-compliant backend. Instead of manually crafting fetch calls, handling URL construction, and parsing typed responses, developers can use the SDK's ready-made methods — with full TypeScript autocompletion matching the OMSS spec types.
+The `@omss/sdk` is the official TypeScript client library for consuming any OMSS-compliant backend.
 
-### Key Features
+Instead of manually crafting fetch calls, handling URL construction, and parsing typed responses, developers can use the SDK's ready-made methods — with full TypeScript autocompletion matching the OMSS spec types.
 
-- **Typed Client**: Strongly-typed methods for all OMSS endpoints
-- **Unified Result Shape**: Every call returns `{ data, error, status }` — no try/catch needed
-- **React Integration**: Optional `OmssProvider` context and `useOmssClient` hook
-- **Zero Runtime Dependencies**: Thin `fetch` wrapper — React is only a peer dep for the context
-- **Custom Fetch**: Swap in your own `fetch` for SSR, tests, or custom interceptors
-- **Auth Headers**: Inject auth tokens via `getDefaultHeaders`
-- **Error Typing**: Typed OMSS error codes (e.g. `INVALID_TMDB_ID`, `NO_SOURCES_AVAILABLE`)
-- **Full Type Safety**: All OMSS spec entities exported as TypeScript types
+---
+
+## ✨ Key Features
+
+* **Typed Client**: Strongly-typed methods for all OMSS endpoints
+* **Unified Result Shape**: Every call returns `{ data, error }` — no try/catch needed
+* **Zero Runtime Dependencies**: Thin `fetch` wrapper
+* **Custom Fetch**: Swap in your own `fetch` for SSR, tests, or interceptors
+* **Auth Headers**: Inject headers via `getDefaultHeaders`
+* **Error Typing**: Typed OMSS error codes
+* **Framework Agnostic**: Works with React, Vue, Angular, or vanilla JS
+* **Full Type Safety**: All OMSS spec entities exported
+
+---
 
 ## 🚀 Installation
 
-### Prerequisites
-
-- Node.js 18.x or higher
-- npm, yarn, or pnpm
-- A running OMSS-compliant backend (see [@omss/framework](https://github.com/omss-spec/framework))
-
-### Install the Package
-
 ```bash
-# npm
 npm install @omss/sdk
-
-# yarn
-yarn add @omss/sdk
-
-# pnpm
-pnpm add @omss/sdk
 ```
+
+---
 
 ## 🚀 Quick Start
 
-Minimal example — create a client and fetch a movie's streaming sources:
-
 ```ts
-// omssService.ts
 import { createOmssClient } from '@omss/sdk'
 
 export const omssService = createOmssClient({
-    baseUrl: 'https://api.example.com', // your OMSS backend base URL
+    baseUrl: 'https://api.example.com',
 })
 ```
 
-Use it anywhere in your application:
-
 ```ts
-import { omssService } from '@omss/sdk'
+const { data, error } = await omssService.getMovie('155')
 
-async function loadMovie(id: string) {
-    const { data, error, status } = await omssService.getMovie(id)
-
-    if (error) {
-        console.error('Failed to load movie', status, error.error.code, error.error.message)
-        return
-    }
-
-    // data is a fully typed SourceResponse
-    console.log('Sources:', data.sources)
-    console.log('Subtitles:', data.subtitles)
+if (error) {
+    console.error(error.error.code, error.error.message)
+    return
 }
+
+console.log(data.sources)
 ```
+
+---
 
 ## ⚙️ Configuration
 
-The client constructor (and `OmssProvider`) accept the following config:
-
 ```ts
 interface OmssClientConfig {
-    baseUrl: string                       // e.g. 'https://api.example.com'
-    fetchFn?: typeof fetch                // custom fetch (for SSR, tests, etc.)
-    getDefaultHeaders?: () => HeadersInit // inject headers on every request
+    baseUrl: string
+    fetchFn?: typeof fetch
+    getDefaultHeaders?: () => HeadersInit
 }
 ```
 
-### Example Configurations
-
-#### Basic
-
-```ts
-const omssService = createOmssClient({
-    baseUrl: 'https://api.example.com',
-})
-```
-
-#### With Auth Token
-
-```ts
-const omssService = createOmssClient({
-    baseUrl: 'https://api.example.com',
-    getDefaultHeaders: () => ({
-        Authorization: `Bearer ${window.localStorage.getItem('token') ?? ''}`,
-    }),
-})
-```
-
-#### With Custom Fetch (e.g. for SSR or testing)
-
-```ts
-import nodeFetch from 'node-fetch'
-
-const omssService = createOmssClient({
-    baseUrl: 'https://api.example.com',
-    fetchFn: nodeFetch as typeof fetch,
-})
-```
+---
 
 ## 📡 Client API
 
-All methods return `Promise<OmssResult<T>>`:
+All methods return:
 
 ```ts
-interface OmssResult<T> {
-    data: T | null           // success payload if HTTP 2xx
-    error: ErrorResponse | null // typed OMSS error if HTTP non-2xx
-    status: number           // HTTP status code (0 on network error)
-}
+export type OmssResult<T> =
+    | { data: T; error: null }
+    | { data: null; error: ErrorResponse }
 ```
+
+meaning it is either an error or data. One `if` check is enough.
+
+---
 
 ### Available Methods
 
@@ -152,134 +108,147 @@ import { createOmssClient } from '@omss/sdk'
 
 const client = createOmssClient({ baseUrl: '...' })
 
-// Health / Metadata
-client.getHealth():        Promise<OmssResult<HealthResponse>>  // GET /
-client.getVersion():       Promise<OmssResult<HealthResponse>>  // GET /v1
-client.getHealthStatus():  Promise<OmssResult<HealthResponse>>  // GET /v1/health
+// Health
+client.getHealth()
+client.getVersion()
+client.getHealthStatus()
 
-// Content
-client.getMovie(id: string): Promise<OmssResult<SourceResponse>>
-// GET /v1/movies/{id}
+// Sources
+client.getMovie(id: string)
+client.getTvEpisode(id: string, season: number, episode: number)
 
-client.getTvEpisode(
-    id: string,
-    season: number,
-    episode: number,
-): Promise<OmssResult<SourceResponse>>
-// GET /v1/tv/{id}/seasons/{season}/episodes/{episode}
+// Cache
+client.refreshSource(responseId: string)
 
-// Cache Refresh
-client.refreshSource(responseId: string): Promise<OmssResult<RefreshResponse>>
-// GET /v1/refresh/{responseId}
+// Runtime Config change
+client.getBaseUrl()
+client.setBaseUrl(newBaseUrl: string)
 ```
 
-### Response Shape
-
-The Response Shape follows the OMSS Specification v1.0.0. You can read more about it here: https://github.com/omss-spec/omss-spec/blob/main/spec/v1.0/omss-v1.0.md#6-response-specifications
-
-## ⚛️ React Integration
-
-The SDK ships an optional React context so you don't have to prop-drill your client instance.
-
-### 1) Wrap your app with `OmssProvider`
-
-```tsx
-// main.tsx or App.tsx
-// and other imports
-import { OmssProvider } from '@omss/sdk'
-
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-    <React.StrictMode>
-        <OmssProvider
-            config={{
-                baseUrl: 'https://api.example.com',
-                // optionally:
-                // getDefaultHeaders: () => ({ "foo": 'bar' }),
-            }}
-        >
-            <App />
-        </OmssProvider>
-    </React.StrictMode>
-)
-```
-
-### 2) Access the client via `useOmssClient`
-
-```tsx
-import { useOmssClient } from '@omss/sdk'
-
-export function MovieButton({ id }: { id: string }) {
-    const omss = useOmssClient()
-
-    const handleClick = async () => {
-        const { data, error } = await omss.getMovie(id)
-
-        if (error) {
-            alert(`Failed to load movie: ${error.error.message}`)
-            return
-        }
-
-        if (!data || data.sources.length === 0) {
-            alert('No sources available')
-            return
-        }
-
-        console.log('Start playback from:', data.sources.url)
-    }
-
-    return <button onClick={handleClick}>Play</button>
-}
-```
-
-> You can skip the context entirely and just import a shared `omssService` singleton if you prefer.
+---
 
 ## 🛡️ Error Handling
 
-When the backend returns an OMSS error response, you get a fully typed `ErrorResponse`:
-
 ```ts
-const { data, error, status } = await omssService.getMovie('not-a-number')
+const { data, error } = await omssService.getMovie('invalid')
 
 if (error) {
-    console.log(status)              // e.g. 400
-    console.log(error.error.code)    // 'INVALID_TMDB_ID'
-    console.log(error.error.message) // 'TMDB ID must be numeric'
-    console.log(error.traceId)       // for logging/tracing
+    console.log(error.error.code)
+    console.log(error.error.message)
+    console.log(error.traceId)
 }
 ```
 
-Network errors are normalized to `status = 0` with an `INTERNAL_ERROR`-like object and a `traceId` of `"network-error"`, so you can handle all failure modes uniformly.
+Network errors are normalized into an `INTERNAL_ERROR` with:
 
-##  OMSS Compliance
+```ts
+traceId: 'network-error'
+```
 
-This SDK follows the [OMSS Standard v1.0.0](https://github.com/omss-spec/omss-spec):
+---
 
--  **Typed API Endpoints**: All v1.0 endpoints covered
--  **Standardized Response Types**: Mirrors OMSS schema exactly
--  **Typed Error Codes**: All OMSS error codes represented
--  **Source Identification**: `responseId` and provider attribution supported
--  **Audio Track Support**: `AudioTrack[]` per source
--  **Subtitle Support**: `Subtitle[]` with format metadata
--  **Quality Indicators**: Resolution-based quality tags typed
--  **Diagnostics**: `Diagnostic[]` per response typed
--  **Cache Refresh**: `refreshSource` endpoint supported
+# 🧩 Framework Integration
+
+The SDK is **framework-agnostic**. You can create your own context/provider pattern depending on your framework.
+
+---
+
+## ⚛️ React Example
+
+### Create Context
+
+```tsx
+import { createContext, useContext } from 'react'
+import { createOmssClient, OmssClient } from '@omss/sdk'
+
+const OmssContext = createContext<OmssClient | null>(null)
+
+export function OmssProvider({ children }: { children: React.ReactNode }) {
+    const client = createOmssClient({
+        baseUrl: 'https://api.example.com',
+    })
+
+    return (
+        <OmssContext.Provider value={client}>
+            {children}
+        </OmssContext.Provider>
+    )
+}
+
+export function useOmssClient() {
+    const ctx = useContext(OmssContext)
+    if (!ctx) throw new Error('OmssProvider missing')
+    return ctx
+}
+```
+
+---
+
+## 🟢 Vue (Composition API)
+
+```ts
+import { inject, provide } from 'vue'
+import { createOmssClient } from '@omss/sdk'
+
+const OMSS_KEY = Symbol('omss')
+
+export function provideOmss() {
+    const client = createOmssClient({
+        baseUrl: 'https://api.example.com',
+    })
+
+    provide(OMSS_KEY, client)
+}
+
+export function useOmssClient() {
+    const client = inject(OMSS_KEY)
+    if (!client) throw new Error('OMSS not provided')
+    return client
+}
+```
+
+---
+
+## 🅰️ Angular
+
+```ts
+import { Injectable } from '@angular/core'
+import { createOmssClient, OmssClient } from '@omss/sdk'
+
+@Injectable({ providedIn: 'root' })
+export class OmssService {
+    private client: OmssClient
+
+    constructor() {
+        this.client = createOmssClient({
+            baseUrl: 'https://api.example.com',
+        })
+    }
+
+    getMovie(id: string) {
+        return this.client.getMovie(id)
+    }
+}
+```
+
+---
+
+# 🧠 Design Philosophy
+
+* The SDK is **transport-focused**, not framework-bound
+* Framework integrations are thin wrappers around `OmssClient`
+* You can share the same client across environments (SSR, browser, tests)
+
+---
 
 ## 📚 Additional Resources
 
-- [OMSS Standard](https://github.com/omss-spec/omss-spec)
-- [OMSS Framework (backend)](https://github.com/omss-spec/framework)
-- [OMSS Template (starter)](https://github.com/omss-spec/template)
-- [OMSS Spec – OpenAPI](https://github.com/omss-spec/omss-spec/blob/main/spec/v1.0/omss-v1.0.yml)
+* [OMSS Standard](https://github.com/omss-spec/omss-spec)
+* [OMSS Framework](https://github.com/omss-spec/framework)
+* [OMSS Template](https://github.com/omss-spec/template)
 
-## 🤝 Contributing
-
-Contributions are welcome! Please read [our contributing guidelines](https://github.com/omss-spec/omss-spec/blob/main/CONTRIBUTING.md) before submitting PRs.
+---
 
 ## 📄 License
 
-MIT License - see [LICENSE](./LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- All maintainers
-- OMSS Foundation
+[MIT License](./LICENSE)

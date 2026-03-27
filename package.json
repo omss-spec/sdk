@@ -15,11 +15,7 @@
         "clean": "npx rimraf dist",
         "build": "npm run clean && tsup src/index.ts --format cjs,esm --dts --out-dir dist"
     },
-    "peerDependencies": {
-        "react": ">=16.8.0"
-    },
     "devDependencies": {
-        "@types/react": "^18.0.0",
         "tsup": "^8.5.1",
         "typescript": "^5.0.0"
     },
